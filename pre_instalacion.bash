@@ -23,9 +23,11 @@ function main()
 		echo "composer instalado" | tee -a reporte.txt
 	else
 		echo "Instalando composer" | tee -a reporte.txt
+		sudo yum install php-cli php-zip wget unzip
 		php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 		sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 		composer global require consolidation/cgr
+		PATH="$(composer config -g home)/vendor/bin:$PATH"
 		echo 'export PATH="$(composer config -g home)/vendor/bin:$PATH"' >> ~/.bashrc
 		command -v composer
 		if [ $? -eq 0 ];
