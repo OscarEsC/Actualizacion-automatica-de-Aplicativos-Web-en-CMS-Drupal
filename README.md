@@ -3,7 +3,7 @@ Scripts que permiten la actualización automática del core y módulos de tercer
 
 ### vhost.sh
 Crea un virtual host para el acceso a drupal, habilita el https y lo redirecciona a éste. <br>
-<code> . ./script.sh [<ServerName> <directorio_abdoluto>]... </code>
+<code> . ./script.sh [\<ServerName> \<directorio_abdoluto>]... </code>
 
 ### dep.h
 Instala dependencias necesarias para la correcta isntalacion de composer, drush, drupal, postgres y apache.
