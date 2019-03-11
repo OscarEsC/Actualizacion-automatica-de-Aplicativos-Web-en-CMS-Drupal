@@ -54,3 +54,4 @@ function main()
 	fi
 }
 main
+echo -e "\n Reinicia tu terminal\n"
