@@ -16,8 +16,7 @@ function main(){
 		then
 			DIRS=(${DIRS[@]/$dir})
 		else
-			VERSION=(${DRUPAL//':'/ })
-			VERS+=(${VERSION[2]})
+			VERS+=(`echo $DRUPAL | sed -e 's/Drupal version : //'`)
 		fi
 	done
 
@@ -29,13 +28,22 @@ function main(){
 		echo -e "\t$CONT) $dir (${VERS[CONT-1]})"
 		(( CONT++ ))
 	done
-	echo -ne "\nIngresa el numero del VH de Drupal a actualizar (-1 para todos): "
+	echo -ne "\nIngresa el numero del VH de Drupal a actualizar: "
 	read OPC
 
+	# Verifica ultima version disponible
+	cd ${DIRS[$OPC-1]}
+	V=`drush ups | grep "Drupal"`
+	VERS=(${V// / })
+
 	# Actualiza
-	echo -e "\nActualizando... ${DIRS[$OPC-1]}"
-	# Funcion apara actualizar
-	# actualizar ${DIRS[$OPC-1]} ${VERS[$OPC-1]}
+	if [[ ${VERS[$OPC-1]} == ${VERS[2]} ]]
+	then
+		echo "El sitio ya cuenta con la última versión de Drupal."
+	else
+		echo "Actualizando Drupal..."
+		# actualizar ${DIRS[$OPC-1]} ${VERS[$OPC-1]}
+	fi
 }
 
-main	
+main
