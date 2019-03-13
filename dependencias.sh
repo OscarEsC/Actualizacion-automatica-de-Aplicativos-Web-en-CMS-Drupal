@@ -29,7 +29,7 @@ function main (){
 		dependecias_dev
 	else 
 		#Si es CentOs 7
-		uname -r | grep 3.10.0-862.el7.x86_64 > /dev/null
+		uname -r | grep "3.10.0-\(.*\).el7.x86_64" > /dev/null
 		if [ $? -eq 0 ]; then
 			echo "CentOs 7 detectado" | tee -a reporte.txt
 			dependencias_rh
