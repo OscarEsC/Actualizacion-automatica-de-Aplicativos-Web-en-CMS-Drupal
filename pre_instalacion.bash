@@ -86,8 +86,7 @@ function drush_g()
 	fi
 }
 verifica
-echo "es centos= $es_centos"
 git_g
 composer_g
 drush_g
-#echo -e "\n Reinicia tu terminal\n"
+echo -e "\n Reinicia tu terminal\n"
