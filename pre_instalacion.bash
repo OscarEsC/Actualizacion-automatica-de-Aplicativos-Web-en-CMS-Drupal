@@ -1,6 +1,30 @@
 #!/bin/bash
+function verifica()
+{
+	es_centos=2
+	uname -r | grep 4.9.0-8-amd64 > /dev/null
+	if [ $? -eq 0 ]; then
+		es_centos=1
+		return es_centos
+	fi
+	uname -r | grep "3.10.0-\(.*\).el7.x86_64" > /dev/null
+	if [ $? -eq 0 ]; then
+		es_centos=0
+	fi
+	uname -r | grep 3.16.0-6-amd64
+	if [ $? -eq 0 ]; then
+		es_centos=1
+	fi
+	if [ $es_centos -eq 2 ]; then
+		echo "Sistema operativo no soportado"
+		exit 1
+	else
+		return es_centos
+	fi
+}
 
-function main()
+
+function git_g()
 {
 	command -v git
 	if [ $? -eq 0 ];
@@ -8,7 +32,11 @@ function main()
 		echo "git instalado" | tee -a reporte.txt
 	else
 		echo "Instalando git" | tee -a reporte.txt
-		sudo yum -y install git
+		if [ $es_centos -eq 0 ]; then
+			sudo yum -y install git
+		else
+			sudo apt install git
+		fi
 		if [ $? -eq 0 ];
 		then
 			echo "git se instalo correctamente" | tee -a reporte.txt
@@ -16,7 +44,9 @@ function main()
 			echo "Hubo un problema con la instalacion de git" | tee -a reporte.txt
 		fi
 	fi
-	
+}
+function composer_g()
+{	
 	command -v composer
 	if [ $? -eq 0 ];
 	then
@@ -37,7 +67,9 @@ function main()
 			echo "Hubo un problema con la instalacion de composer" | tee -a reporte.txt
 		fi
 	fi
-
+}
+function drush_g()
+{
 	command -v drush
 	if [ $? -eq 0 ];
 	then
@@ -53,5 +85,9 @@ function main()
 		fi
 	fi
 }
-main
-echo -e "\n Reinicia tu terminal\n"
+verifica
+echo "es centos= $es_centos"
+git_g
+composer_g
+drush_g
+#echo -e "\n Reinicia tu terminal\n"
