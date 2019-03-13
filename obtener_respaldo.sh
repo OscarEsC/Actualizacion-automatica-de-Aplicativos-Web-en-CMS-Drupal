@@ -18,9 +18,9 @@ if [ -d /tmp/respaldo_drupal ]; then
 	rm -fR /tmp/respaldo_drupal
 
         if [ $?	-eq 0 ]; then
-                echo "Se elimino correctamente el directorio /tmp/respaldos_sitios" | te$
+                echo "Se elimino correctamente el directorio /tmp/respaldos_sitios" | tee -a reporte.txt
         else
-                echo "Hubo un error al eliminar el directorio /tmp/respaldos_sitios" | t$
+                echo "Hubo un error al eliminar el directorio /tmp/respaldos_sitios" | tee -a reporte.txt
         fi
 
 fi
