@@ -1,49 +1,95 @@
 #!/bin/bash
 
+# Función que obtiene la versión instalada de Drupal
+function obtenerVersion(){
+	cd $1
+	DRUPAL=`drush status | grep "Drupal version"`
+	if [ ${#DRUPAL} -eq 0 ]
+	then
+		DIRS=(${DIRS[@]/$dir})
+	else
+		VERS=(`echo $DRUPAL | sed -e 's/Drupal version : //'`)
+		echo $VERS
+	fi
+	echo ""
+}
+
+# Función que verifica si hay actualizaciones disponibles para la versión instalada de Drupal
+function verificaActualizacion(){
+	cd $1
+	V=`drush ups | grep "Drupal"`
+	VERS_MAX=(${V// / })
+	echo ${VERS_MAX[2]}
+}
+
+# Función que llama a la funcion que actualiza Drupal o informa si ya está en la última versión.
+function actualizarVH(){
+	# Verifica ultima version disponible
+	ACT=$(verificaActualizacion $1)
+	
+	# Actualiza
+	if [ ${#ACT} -eq 0 ]
+	then
+		echo "Actualizacion de Drupal en ${DIRS_SITES[$OPC-1]}. El sitio ya cuenta con la última versión."
+	else
+		echo "Actualizacion de Drupal en ${DIRS_SITES[$OPC-1]}. ${DIRS_VERS[$OPC-1]} -> $ACT"  | tee -a reporte.txt
+		# actualizar ${DIRS_SITES[$OPC-1]} ${VERS[$OPC-1]}
+	fi
+}
+
 function main(){
 	# Busca directorios qye contengan la carpeta sites
-	BUSQUEDA=$(find /var/www -name "sites" | sed -e 's/\/sites//')
-	DIRS=(${BUSQUEDA// / })
-	VERS=()
-	#echo ${DIRS[@]}
+	SITES=$(find /var/www -name "sites" | sed -e 's/\/sites//')
+	DIRS_SITES=(${SITES// / })
+	DIRS_VERS=()
 
 	# Elimina las rutas que no sean de Drupal y añade la version de los que si
-	for dir in ${DIRS[@]}
+	for dir in ${DIRS_SITES[@]}
 	do
-		cd $dir
-		DRUPAL=`drush status | grep "Drupal version"`
-		if [ ${#DRUPAL} -eq 0 ]
+		VERS_DIR=$(obtenerVersion $dir)
+		if [ ${#VERS_DIR} -eq 0 ]
 		then
-			DIRS=(${DIRS[@]/$dir})
+			DIRS_SITES=(${DIRS_SITES[@]/$dir})
 		else
-			VERS+=(`echo $DRUPAL | sed -e 's/Drupal version : //'`)
+			DIRS_VERS+=($VERS_DIR)
 		fi
 	done
 
 	# Muestra el menú principal
 	echo -e "\n\tMENU PRINCIPAL"
 	CONT=1	
-	for dir in ${DIRS[@]}
+	for dir in ${DIRS_SITES[@]}
 	do
-		echo -e "\t$CONT) $dir (${VERS[CONT-1]})"
+		echo -e "\t$CONT) $dir (${DIRS_VERS[CONT-1]})"
 		(( CONT++ ))
 	done
-	echo -ne "\nIngresa el numero del VH de Drupal a actualizar: "
+	echo -ne "\nIngresa el numero del VH de Drupal a actualizar (-1 todos, 0 otra ruta): "
 	read OPC
 
-	# Verifica ultima version disponible
-	cd ${DIRS[$OPC-1]}
-	V=`drush ups | grep "Drupal"`
-	VERS=(${V// / })
-
-	# Actualiza
-	if [[ ${VERS[$OPC-1]} == ${VERS[2]} ]]
+	# Analisis de opción elegida
+	if [ $OPC -eq -1 ] # Actualiza todos los sitios
 	then
-		echo "El sitio ya cuenta con la última versión de Drupal."
-	else
-		echo "Actualizando Drupal..."
-		# actualizar ${DIRS[$OPC-1]} ${VERS[$OPC-1]}
-	fi
+		for dir in ${DIRS_SITES[@]}
+		do
+			actualizarVH $dir
+		done
+	elif [ $OPC -eq 0 ] # Actualiza otra ruta (si no se aloja en /var/www)
+	then
+		echo -ne "Introduce ruta absoluta del directorio con Drupal a actualizar: "
+		read dir
+		VERS_DIR=$(obtenerVersion $dir)
+		if [ ${#VERS_DIR} -eq 0 ]
+		then
+			echo "directorio $dir no tiene Drupal instalado."
+		else
+			actualizarVH $dir
+		fi
+	elif [ $OPC -gt 0 ] && [ $OPC -lt $CONT ] # Actualiza una opción elegida
+	then
+		actualizarVH ${DIRS_SITES[$OPC-1]}
+	else # Opcion no valida
+		echo "Opcion no valida."
+	fi		
 }
 
 main
