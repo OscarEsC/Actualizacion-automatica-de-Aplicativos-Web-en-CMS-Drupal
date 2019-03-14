@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Funcion que actualiza Drupal
+function actualizarDrupal(){ 
+	cd $1
+	drush archive-dump
+	drush vset --exact maintenance_mode 1 
+	drush cache-clear all
+	drush rf
+	drush pm-update drupal
+	drush vset --exact maintenance_mode 0
+	drush cache-clear all
+}
+
 # Función que obtiene la versión instalada de Drupal
 function obtenerVersion(){
 	cd $1
@@ -33,7 +45,7 @@ function actualizarVH(){
 		echo "Actualizacion de Drupal en ${DIRS_SITES[$OPC-1]}. El sitio ya cuenta con la última versión."
 	else
 		echo "Actualizacion de Drupal en ${DIRS_SITES[$OPC-1]}. ${DIRS_VERS[$OPC-1]} -> $ACT"  | tee -a reporte.txt
-		# actualizar ${DIRS_SITES[$OPC-1]} ${VERS[$OPC-1]}
+		actualizarDrupal $1
 	fi
 }
 
