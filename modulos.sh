@@ -1,7 +1,7 @@
 #!/bin/bash
-user = `whoami`
-sudo chown -R $user:$user /var/www/html/drupal
-cd /var/www/html/drupal
+USR="$(whoami)"
+sudo chown -R $USR:$USR /var/www/sitio2
+cd /var/www/sitio2
 
 drush dl ctools
 drush -y en ctools
@@ -42,4 +42,4 @@ drush -y en captcha
 drush dl views
 drush -y en views
 
-sudo chown -R apache:apache /var/www/html/drupal
+sudo chown -R apache:apache /var/www/sitio2
