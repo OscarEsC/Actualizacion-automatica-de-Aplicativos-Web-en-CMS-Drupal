@@ -9,7 +9,7 @@ yum list installed | grep postgresql >/dev/null
 if [ $? -eq 0 ];then
 	echo "PostgreSQL ya esta instalado en esta maquina" | tee -a reporte.txt
 
-	sudo su postgres -c "createuser --pwprompt --encrypted --no-createrole --no-createdb drupaluser2"
+	sudo su postgres -c "createuser --pwprompt --encrypted --no-createrole --no-createdb drupaluser"
         
 	if [ $? -eq 0 ];then
 	        echo "Se ha creado el usuario para drupal  en PostgreSQL correctamente" | tee -a reporte.txt
@@ -17,7 +17,7 @@ if [ $? -eq 0 ];then
         	echo "Ocurrio un error creando el usuario para drupal en PostgreSQL" | tee -a reporte.txt
         fi
 
-	sudo su postgres -c "createdb --encoding=UTF8 --owner=drupaluser2 drupaldb2"
+	sudo su postgres -c "createdb --encoding=UTF8 --owner=drupaluser drupaldb"
         if [ $? -eq 0 ];then
 	        echo "Se ha creado la BD para drupal  en PostgreSQL correctamente" | tee -a reporte.txt
         else
