@@ -1,4 +1,26 @@
 #!/bin/bash
+function verifica()
+{
+	es_centos=2
+	uname -r | grep 4.9.0-8-amd64 > /dev/null
+	if [ $? -eq 0 ]; then
+		es_centos=1
+	fi
+	uname -r | grep "3.10.0-\(.*\).el7.x86_64" > /dev/null
+	if [ $? -eq 0 ]; then
+		es_centos=0
+	fi
+	uname -r | grep 3.16.0-6-amd64
+	if [ $? -eq 0 ]; then
+		es_centos=1
+	fi
+	if [ $es_centos -eq 2 ]; then
+		echo "Sistema operativo no soportado"
+		exit 1
+	else
+		return $es_centos
+	fi
+}
 
 #Funcion que hace el respaldo del sitio dado como argumento
 function respaldo (){
@@ -14,15 +36,22 @@ function respaldo (){
 
 # Funcion que actualiza Drupal
 function actualizarDrupal(){ 
+	USR="$(whoami)"
 	cd $1
 	#Se hace el respaldo del sitio antes de actualizar
 	respaldo $1
 	drush vset --exact maintenance_mode 1 
 	drush cache-clear all
 	drush rf
+	sudo chown -R $USR:$USR $1
 	drush pm-update drupal
 	drush vset --exact maintenance_mode 0
 	drush cache-clear all
+	if [ $es_centos -eq 0 ]; then
+		sudo chown -R apache:apache $1
+	else
+		sudo chown -R www-data:www-data $1
+	fi
 }
 
 # Función que obtiene la versión instalada de Drupal
@@ -116,5 +145,5 @@ function main(){
 		echo "Opcion no valida."
 	fi		
 }
-
+verifica
 main

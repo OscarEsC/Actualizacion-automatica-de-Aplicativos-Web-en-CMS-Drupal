@@ -42,4 +42,4 @@ drush -y en captcha
 drush dl views
 drush -y en views
 
-sudo chown -R apache:apache /var/www/sitio2
+sudo chown -R www-data:www-data /var/www/sitio2
