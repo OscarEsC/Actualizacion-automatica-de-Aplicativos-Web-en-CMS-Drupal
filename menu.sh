@@ -2,7 +2,9 @@
 
 # Funcion para restaurar versiones anteriores
 function restaurar(){
-	echo "Funcion restaurar."
+	echo -ne "Ingresa archivo tar.gz a restaurar: "
+	read TAR
+	# verificar si existe, regresar a menu si no, restaurar si si
 }
 
 #Funcion que hace el respaldo del sitio dado como argumento
