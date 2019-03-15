@@ -85,9 +85,10 @@ function drupal(){
 }
 
 function main(){
-	#entorno
+	entorno
 	echo "Entorno creado"
-	#postgres
+	postgres
+	echo "Postgres instalado."
 	crearSitios $*
 	echo "Sitios creados"
 	drupal $*
