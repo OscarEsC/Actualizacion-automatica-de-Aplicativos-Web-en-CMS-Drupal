@@ -22,7 +22,7 @@ function postgres(){
 	sudo mkdir -p /usr/local/pgsql/data
 	sudo chown -R postgres:postgres /usr/local/pgsql/
 	sudo su - postgres
-	cd /usr/lib/postgresql/9.3/bin/
+	cd /usr/lib/postgresql/9.4/bin/
 	./initdb -D /usr/local/pgsql/data
 	./postgres -D /usr/local/pgsql/data
 }
@@ -54,6 +54,7 @@ function crearSitios(){
         CustomLog $DIR/requests.log combined
         <Directory $DIR/$SN>
                 AllowOverride All
+                Order Deny,Allow
         </Directory>
 </VirtualHost>
 
@@ -62,19 +63,34 @@ function crearSitios(){
         SSLEngine On
         SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
         SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
 		DocumentRoot $DIR/$SN
         ErrorLog $DIR/error.log
         CustomLog $DIR/requests.log combined
         <Directory $DIR/$SN>
                 AllowOverride All
+                Order Deny,Allow
         </Directory>
 </VirtualHost>
 " > "/etc/apache2/sites-available/$SN.conf"
+
+			apt install libxml2 libapache2-modsecurity -y
+			cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
+			sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/g' "/etc/modsecurity/modsecurity.conf"
+			touch /var/log/apache2/modsec_audit.log
+			chown root:adm /var/log/apache2/modsec_audit.log
+			chmod 0640 /var/log/apache2/modsec_audit.log
+
+			sed -i 's/ServerTokens OS/ServerTokens ProductOnly/g' "/etc/apache2/conf-available/security.conf"
+			sed -i 's/ServerSignature On/#ServerSignature On/g' "/etc/apache2/conf-available/security.conf"
+			sed -i 's/#ServerSignature Off/ServerSignature Off/g' "/etc/apache2/conf-available/security.conf"
 
 			a2ensite "$SN.conf"
 			a2enmod ssl
 			a2ensite default-ssl
 			a2enmod rewrite
+			a2enmod security2
+			a2enmod unique_id
 			service apache2 restart
 		done
 	fi
@@ -104,12 +120,10 @@ function main(){
 	entorno
 	echo "Entorno creado"
 	postgres
-	echo "Postgres instalado."
 	crearSitios $*
 	echo "Sitios creados"
-	drupal $*
+	#drupal $*
 	echo "Drupal instalado"
 }
 
 main $*
-
