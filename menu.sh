@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Funcion para restaurar versiones anteriores
+function restaurar(){
+	echo "Funcion restaurar."
+}
+
 #Funcion que hace el respaldo del sitio dado como argumento
 function respaldo (){
 	dname= `echo $1 | sed 's/\/var\/www\///g' | grep -v \/`
@@ -88,11 +93,14 @@ function main(){
 		echo -e "\t$CONT) $dir (${DIRS_VERS[CONT-1]})"
 		(( CONT++ ))
 	done
-	echo -ne "\nIngresa el numero del VH de Drupal a actualizar (-1 todos, 0 otra ruta): "
+	echo -ne "\nIngresa el numero del VH de Drupal a actualizar (-2 restaurar, -1 todos, 0 otra ruta): "
 	read OPC
 
 	# Analisis de opción elegida
-	if [ $OPC -eq -1 ] # Actualiza todos los sitios
+	if [ $OPC -eq -2 ] # Actualiza todos los sitios
+	then
+		restaurar
+	elif [ $OPC -eq -1 ] # Actualiza todos los sitios
 	then
 		for dir in ${DIRS_SITES[@]}
 		do
@@ -114,7 +122,7 @@ function main(){
 		actualizarVH ${DIRS_SITES[$OPC-1]}
 	else # Opcion no valida
 		echo "Opcion no valida."
-	fi		
+	fi	
 }
 
 main
