@@ -27,6 +27,25 @@ function restaurar(){
 	echo -ne "Ingresa archivo tar.gz a restaurar: "
 	read TAR
 	# verificar si existe, regresar a menu si no, restaurar si si
+	dname=$(echo $TAR | sed 's/\/var\/www\///g' | grep -v \/)
+	if [ $? -eq 0 ]; then	
+		#echo "Dir $dname"
+		if [ -f /tmp/respaldo_$dname.tar.gz ]; then
+			echo "Realizando restauracion"
+			cd $1
+			drush archive-restore /tmp/respaldo_$dname.tar.gz
+		else
+			echo "No existe un archivo de backup asociado a este sitio"
+		fi
+	else
+		if [ -f /tmp/respaldo_$1.tar.gz ];then
+			echo "Realizando restauracion"
+			cd $1
+			drush archive-restore /tmp/respaldo_$1.tar.gz
+		else
+			echo "No existe	un archivo de backup asociado a	este sitio"
+		fi
+	fi
 }
 
 #Funcion que hace el respaldo del sitio dado como argumento
@@ -37,11 +56,11 @@ function respaldo (){
 		echo $dname
 		cd $1
 		echo "La contrasena solicitada es de la DB de drupal"
-		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$dname.tar.gz
+		drush archive-dump --overwrite --destination=/tmp/respaldo_$dname.tar.gz
 	else
 		echo "La contrasena solicitada es de la DB de drupal"
 		cd $1
-		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$1.tar.gz
+		drush archive-dump --overwrite --destination=/tmp/respaldo_$1.tar.gz
 	fi
 }
 
