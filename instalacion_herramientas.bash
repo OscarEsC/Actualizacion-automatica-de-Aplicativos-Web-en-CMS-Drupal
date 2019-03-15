@@ -53,7 +53,11 @@ function composer_g()
 		echo "composer instalado" | tee -a reporte.txt
 	else
 		echo "Instalando composer" | tee -a reporte.txt
-		sudo yum install php-cli php-zip wget unzip
+		if [ $es_centos -eq 0 ]; then
+			sudo yum install php-cli php-zip wget unzip
+		else
+			sudo apt install php-cli php-zip wget unzip
+		fi
 		php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 		sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 		composer global require consolidation/cgr
