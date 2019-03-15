@@ -24,7 +24,7 @@ function verifica()
 
 # Funcion para restaurar versiones anteriores
 function restaurar(){
-	echo -ne "Ingresa el nombre del sitio a restaurar: "
+	echo -ne "Ingresa la ruta del sitio a restaurar: "
 	read TAR
 	# verificar si existe, regresar a menu si no, restaurar si si
 	dname=$(echo $TAR | sed 's/\/var\/www\///g' | grep -v \/)
