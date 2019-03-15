@@ -44,9 +44,9 @@ function crearSitios(){
 			fi
 
 			echo "<VirtualHost *:80>
-        #RewriteEngine On
-        #RewriteCond %{HTTPS} !=on
-        #RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
 
         ServerName $SN
         DocumentRoot $DIR/$SN
@@ -56,9 +56,25 @@ function crearSitios(){
                 AllowOverride All
         </Directory>
 </VirtualHost>
+
+<VirtualHost *:443>
+        ServerName $SN
+        SSLEngine On
+        SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+        SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+		DocumentRoot $DIR/$SN
+        ErrorLog $DIR/error.log
+        CustomLog $DIR/requests.log combined
+        <Directory $DIR/$SN>
+                AllowOverride All
+        </Directory>
+</VirtualHost>
 " > "/etc/apache2/sites-available/$SN.conf"
 
 			a2ensite "$SN.conf"
+			a2enmod ssl
+			a2ensite default-ssl
+			a2enmod rewrite
 			service apache2 restart
 		done
 	fi
