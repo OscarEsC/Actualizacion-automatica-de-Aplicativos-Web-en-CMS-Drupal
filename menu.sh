@@ -32,8 +32,14 @@ function restaurar(){
 		#echo "Dir $dname"
 		if [ -f /tmp/respaldo_$dname.tar.gz ]; then
 			echo "Realizando restauracion"
+			echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+			echo $TAR
+			echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 			cd $TAR
 			drush archive-restore /tmp/respaldo_$dname.tar.gz --destination $TAR --overwrite
+			mv "$TAR/1" "/tmp/drupal"
+			rm -rf "$TAR"
+			mv "/tmp/drupal" "$TAR"
 		else
 			echo "No existe un archivo de backup asociado a este sitio"
 		fi
