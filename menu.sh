@@ -30,13 +30,17 @@ function restaurar(){
 }
 
 #Funcion que hace el respaldo del sitio dado como argumento
+#en este punto se ha comprobado que el sitio es de drupal
 function respaldo (){
-	dname= `echo $1 | sed 's/\/var\/www\///g' | grep -v \/`
-	if [ ${#dname} -eq 0 ]; then
-		echo "Nombre /tmp/respaldo_$dname.tar.gz"
+	dname=$(echo $1 | sed 's/\/var\/www\///g' | grep -v \/)
+	if [ $? -eq 0 ]; then
+		echo $dname
+		cd $1
+		echo "La contrasena solicitada es de la DB de drupal"
 		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$dname.tar.gz
 	else
-		echo "nombre /tmp/respaldo_$1.tar.gz"
+		echo "La contrasena solicitada es de la DB de drupal"
+		cd $1
 		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$1.tar.gz
 	fi
 }
