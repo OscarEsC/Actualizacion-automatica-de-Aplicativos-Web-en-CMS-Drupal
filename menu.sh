@@ -1,9 +1,22 @@
 #!/bin/bash
 
+#Funcion que hace el respaldo del sitio dado como argumento
+function respaldo (){
+	dname= `echo $1 | sed 's/\/var\/www\///g' | grep -v \/`
+	if [ ${#dname} -eq 0 ]; then
+		echo "Nombre /tmp/respaldo_$dname.tar.gz"
+		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$dname.tar.gz
+	else
+		echo "nombre /tmp/respaldo_$1.tar.gz"
+		drush archive-dump --tar-options="--exclude=%files --exclude=.git" --preserve-symlinks --overwrite --destination=/tmp/respaldo_$1.tar.gz
+	fi
+}
+
 # Funcion que actualiza Drupal
 function actualizarDrupal(){ 
 	cd $1
-	drush archive-dump
+	#Se hace el respaldo del sitio antes de actualizar
+	respaldo $1
 	drush vset --exact maintenance_mode 1 
 	drush cache-clear all
 	drush rf
