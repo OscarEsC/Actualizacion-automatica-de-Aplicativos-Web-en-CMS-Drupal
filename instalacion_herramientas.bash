@@ -80,7 +80,7 @@ function drush_g()
 		echo "drush instalado" | tee -a reporte.txt
 	else
 		echo "Instalando drush" | tee -a reporte.txt
-		cgr drush/drush
+		cgr drush/drush:8.x
 		if [ $? -eq 0 ];
 		then
 			echo "drush se instalo correctamente" | tee -a reporte.txt
