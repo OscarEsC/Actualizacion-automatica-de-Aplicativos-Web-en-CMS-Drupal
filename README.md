@@ -11,6 +11,11 @@ Verifica que git, composer y drush estén instalados en el equipo, de no ser as�
 Ejecución:  
 bash instalacion_herramientas.sh  
 
+### menu.sh  
+Lista los sitios drupal y puede actualizar uno o varios. Antes de hacer la actualización hace un respaldo de los sitios y al finalizar la actualización se tiene la posibilidad de restaurar el sitio hasta antes de actualizarlo.  
+Ejecución:  
+bash menu.sh
+
 ### vhost.sh
 Crea un virtual host para el acceso a drupal, habilita el https y lo redirecciona a éste. <br>
 <code> . ./script.sh [\<ServerName> \<directorio_abdoluto>]... </code>
