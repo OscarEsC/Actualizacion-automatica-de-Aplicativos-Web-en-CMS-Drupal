@@ -33,7 +33,7 @@ function restaurar(){
 		if [ -f /tmp/respaldo_$dname.tar.gz ]; then
 			echo "Realizando restauracion"
 			cd $1
-			drush archive-restore /tmp/respaldo_$dname.tar.gz
+			drush archive-restore /tmp/respaldo_$dname.tar.gz --destination $1 --overwrite
 		else
 			echo "No existe un archivo de backup asociado a este sitio"
 		fi
@@ -41,7 +41,7 @@ function restaurar(){
 		if [ -f /tmp/respaldo_$1.tar.gz ];then
 			echo "Realizando restauracion"
 			cd $1
-			drush archive-restore /tmp/respaldo_$1.tar.gz
+			drush archive-restore /tmp/respaldo_$1.tar.gz --destination $1 --overwrite
 		else
 			echo "No existe	un archivo de backup asociado a	este sitio"
 		fi
