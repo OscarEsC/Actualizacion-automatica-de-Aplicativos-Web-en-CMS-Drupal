@@ -5,7 +5,6 @@ function verifica()
 	uname -r | grep 4.9.0-8-amd64 > /dev/null
 	if [ $? -eq 0 ]; then
 		es_centos=1
-		return es_centos
 	fi
 	uname -r | grep "3.10.0-\(.*\).el7.x86_64" > /dev/null
 	if [ $? -eq 0 ]; then
