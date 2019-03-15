@@ -7,8 +7,8 @@ Las siguientes dependencias son necesarias y suponemos que ya están instaladas:
  También son necesarias politicas de sudo, de no contar con estas, es posible que haya errores inesperados e instalaciones sin configurar y no nos hacemos responsables de los daños que esto pueda provocar.  
  
 ### instalacion_herramientas.sh  
-Verifica que git, composer y drush estén instalados en el equipo, de no ser así los instala.
-Ejecución:
+Verifica que git, composer y drush estén instalados en el equipo, de no ser así los instala.  
+Ejecución:  
 bash instalacion_herramientas.sh  
 
 ### vhost.sh
