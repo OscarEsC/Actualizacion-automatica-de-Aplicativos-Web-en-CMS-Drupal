@@ -4,6 +4,6 @@ Crea un entorno virtual en debian 8 (instala postgres --no crea las bases de dat
 Ejemplo <br>
 <code> ./debian8.sh sitio1 /var/www/sitio1 </code> <br>
   
-  ###modulos.sh
+  ### modulos.sh
   Instala y habilita los modulos para el sitio drupal especificado como argumento. Se ejecuta de la siguiente manera:
   <code> ./modulos.sh /var/www/sitio1/sitio1 </code>
