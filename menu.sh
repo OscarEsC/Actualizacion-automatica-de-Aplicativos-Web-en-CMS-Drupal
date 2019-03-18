@@ -1,6 +1,5 @@
 #!/bin/bash
-function verifica()
-{
+function verifica(){
 	es_centos=2
 	uname -r | grep 4.9.0-8-amd64 > /dev/null
 	if [ $? -eq 0 ]; then
@@ -23,51 +22,42 @@ function verifica()
 }
 
 # Funcion para restaurar versiones anteriores
-function restaurar(){
-	echo -ne "Ingresa la ruta del sitio a restaurar: "
-	read TAR
+function restaurarDrupal(){
+	# $1 es la ruta de Drupal que se va a restaurar, los respaldos estan en "$1/.respaldos" y ya
+	# está verificado que si hay respaldos, solo restaurar con el archivo existente.
 	# verificar si existe, regresar a menu si no, restaurar si si
-	dname=$(echo $TAR | sed 's/\/var\/www\///g' | grep -v \/)
-	if [ $? -eq 0 ]; then	
-		#echo "Dir $dname"
-		if [ -f /tmp/respaldo_$dname.tar.gz ]; then
-			echo "Realizando restauracion"
-			echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-			echo $TAR
-			echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-			cd $TAR
-			drush archive-restore /tmp/respaldo_$dname.tar.gz --destination $TAR --overwrite
-			mv "$TAR/1" "/tmp/drupal"
-			rm -rf "$TAR"
-			mv "/tmp/drupal" "$TAR"
-		else
-			echo "No existe un archivo de backup asociado a este sitio"
-		fi
-	else
-		if [ -f /tmp/respaldo_$TAR.tar.gz ];then
-			echo "Realizando restauracion"
-			cd $TAR
-			drush archive-restore /tmp/respaldo_$TAR.tar.gz --destination $TAR --overwrite
-		else
-			echo "No existe	un archivo de backup asociado a	este sitio"
-		fi
+	#echo "Dir $dname"
+	existe_dir=$(verificaRespaldos)
+	#terminanos la funcion si no existe /.respaldos
+	#el caso que no exista este directorio, implica que no existe ningun respaldo del sitio
+	if [ "$existe_dir" = "0" ]; then
+		return 0
 	fi
+
+	cd $1
+	echo "Realizando restauracion..."
+	#obtenermos el tar.gz del directorio respaldos
+	drush archive-restore "$1/.respaldos/respaldo.tar.gz" --destination $1 --overwrite
+	sudo mv "$1/1" "/tmp/drupal"
+	sudo rm -rf "$1"
+	sudo mv "/tmp/drupal" "$1"
 }
 
 #Funcion que hace el respaldo del sitio dado como argumento
 #en este punto se ha comprobado que el sitio es de drupal
 function respaldo (){
-	dname=$(echo $1 | sed 's/\/var\/www\///g' | grep -v \/)
-	if [ $? -eq 0 ]; then
-		echo $dname
-		cd $1
-		echo "La contrasena solicitada es de la DB de drupal"
-		drush archive-dump --overwrite --destination=/tmp/respaldo_$dname.tar.gz
-	else
-		echo "La contrasena solicitada es de la DB de drupal"
-		cd $1
-		drush archive-dump --overwrite --destination=/tmp/respaldo_$1.tar.gz
+	# funcion que realiza el respaldo del sitio antes de actualizarlo. el respaldo se realiza dentro de 
+	#~/.respaldos
+	existe_dir=$(verificaRespaldos)
+	#si no existe ningun respaldo, se crea el directorio oculto
+	if [ "$existe_dir" != "1" ]; then
+		mkdir "$1/.respaldos"
 	fi
+
+	cd $1
+	echo "La contrasena solicitada es de la DB de drupal"
+	#el respaldo se guarda dentro del directorio oculto
+	drush archive-dump --overwrite --destination="$1/.respaldos/respaldo.tar.gz"
 }
 
 # Funcion que actualiza Drupal
@@ -80,7 +70,7 @@ function actualizarDrupal(){
 	drush cache-clear all
 	drush rf
 	sudo chown -R $USR:$USR $1
-	drush pm-update drupal
+	drush --pm-force pm-update drupal
 	drush vset --exact maintenance_mode 0
 	drush cache-clear all
 	if [ $es_centos -eq 0 ]; then
@@ -116,7 +106,7 @@ function verificaActualizacion(){
 function actualizarVH(){
 	# Verifica ultima version disponible
 	ACT=$(verificaActualizacion $1)
-	
+
 	# Actualiza
 	if [ ${#ACT} -eq 0 ]
 	then
@@ -124,6 +114,31 @@ function actualizarVH(){
 	else
 		echo "Actualizacion de Drupal en ${DIRS_SITES[$OPC-1]}. ${DIRS_VERS[$OPC-1]} -> $ACT"  | tee -a reporte.txt
 		actualizarDrupal $1
+	fi
+}
+
+# Función que verifica si hay respaldos disponibles para Drupal instalado
+function verificaRespaldos(){
+	if [ ! -d "$DIR/.respaldos" ] || [ ${#`ls "$DIR/.respaldos"`} -eq 0 ]
+	then
+		echo "0"
+	else
+		echo "1"
+	fi
+}
+
+# Función que llama a la funcion que restaura Drupal, o informa si no hay respaldos
+function restaurarVH(){
+	# Verifica ultima version disponible
+	ACT=$(verificaRespaldos $1)
+	
+	# Actualiza
+	if [ "$ACT" = "0" ]
+	then
+		echo "No hay respaldos disponibles para Drupal ubicado en $1."
+	else
+		echo "Restauración de Drupal ubicado en $1."  | tee -a reporte.txt
+		restaurarDrupal $1
 	fi
 }
 
@@ -146,43 +161,75 @@ function main(){
 	done
 
 	# Muestra el menú principal
-	echo -e "\n\tMENU PRINCIPAL"
+	echo -e "\n\tMENU PRINCIPAL - SITIOS CON DRUPAL"
 	CONT=1	
 	for dir in ${DIRS_SITES[@]}
 	do
 		echo -e "\t$CONT) $dir (${DIRS_VERS[CONT-1]})"
 		(( CONT++ ))
 	done
-	echo -ne "\nIngresa el numero del VH de Drupal a actualizar (-2 restaurar, -1 todos, 0 otra ruta): "
+	echo -ne "\nIngresa acción a realizar (0 actualizar, 1 restaurar): "
+	read ACC
+	echo -ne "Ingresa no. de host a aplicar (-1 todos, 0 otra ruta): "
 	read OPC
 
 	# Analisis de opción elegida
-	if [ $OPC -eq -2 ] # Actualiza todos los sitios
+	if [ $ACC -eq 0 ] # Actualizar #################################################################
 	then
-		restaurar
-	elif [ $OPC -eq -1 ] # Actualiza todos los sitios
-	then
-		for dir in ${DIRS_SITES[@]}
-		do
-			actualizarVH $dir
-		done
-	elif [ $OPC -eq 0 ] # Actualiza otra ruta (si no se aloja en /var/www)
-	then
-		echo -ne "Introduce ruta absoluta del directorio con Drupal a actualizar: "
-		read dir
-		VERS_DIR=$(obtenerVersion $dir)
-		if [ ${#VERS_DIR} -eq 0 ]
+		# Analisis de opción elegida
+		if [ $OPC -eq -1 ] # Actualiza todos los sitios
 		then
-			echo "directorio $dir no tiene Drupal instalado."
-		else
-			actualizarVH $dir
-		fi
-	elif [ $OPC -gt 0 ] && [ $OPC -lt $CONT ] # Actualiza una opción elegida
+			for dir in ${DIRS_SITES[@]}
+			do
+				actualizarVH $dir
+			done
+		elif [ $OPC -eq 0 ] # Actualiza otra ruta (si no se aloja en /var/www)
+		then
+			echo -ne "Introduce ruta absoluta del directorio con Drupal a actualizar: "
+			read dir
+			VERS_DIR=$(obtenerVersion $dir)
+			if [ ${#VERS_DIR} -eq 0 ]
+			then
+				echo "directorio $dir no tiene Drupal instalado."
+			else
+				actualizarVH $dir
+			fi
+		elif [ $OPC -gt 0 ] && [ $OPC -lt $CONT ] # Actualiza una opción elegida
+		then
+			actualizarVH ${DIRS_SITES[$OPC-1]}
+		else # Opcion no valida
+			echo "Opcion no valida."
+		fi	
+	elif [ $ACC -eq 1 ] # Restaurar ################################################################
 	then
-		actualizarVH ${DIRS_SITES[$OPC-1]}
-	else # Opcion no valida
-		echo "Opcion no valida."
-	fi	
+		# Analisis de opción elegida
+		if [ $OPC -eq -1 ] # Actualiza todos los sitios
+		then
+			for dir in ${DIRS_SITES[@]}
+			do
+				restaurarVH $dir
+			done
+		elif [ $OPC -eq 0 ] # Actualiza otra ruta (si no se aloja en /var/www)
+		then
+			echo -ne "Introduce ruta absoluta del directorio con Drupal a restaurar: "
+			read dir
+			VERS_DIR=$(obtenerVersion $dir)
+			if [ ${#VERS_DIR} -eq 0 ]
+			then
+				echo "Directorio $dir no tiene Drupal instalado."
+			else
+				restaurarVH $dir
+			fi
+		elif [ $OPC -gt 0 ] && [ $OPC -lt $CONT ] # Actualiza una opción elegida
+		then
+			restaurarVH ${DIRS_SITES[$OPC-1]}
+		else # Opcion no valida
+			echo "Opcion no valida."
+		fi	
+	else # Accion no valida
+		echo "Acción no valida."
+	fi		
 }
+
 verifica
 main
