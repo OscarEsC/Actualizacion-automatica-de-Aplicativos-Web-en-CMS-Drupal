@@ -23,40 +23,42 @@ function verifica(){
 
 # Funcion para restaurar versiones anteriores
 function restaurarDrupal(){
+	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	# $1 es la ruta de Drupal que se va a restaurar, los respaldos estan en "$1/.respaldos" y ya
 	# está verificado que si hay respaldos, solo restaurar con el archivo existente.
+	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	# verificar si existe, regresar a menu si no, restaurar si si
 	#echo "Dir $dname"
 	existe_dir=$(verificaRespaldos)
 	#terminanos la funcion si no existe /.respaldos
-	#el caso que no exista este directorio, implica que no existe ningun respaldo del sitio
 	if [ "$existe_dir" = "0" ]; then
-		return 0
+		echo "Este sitio no tiene ningun respaldo realizado"
+		echo "No se puede realizar la restauracion"
+		exit 0
 	fi
 
 	cd $1
 	echo "Realizando restauracion..."
-	#obtenermos el tar.gz del directorio respaldos
 	drush archive-restore "$1/.respaldos/respaldo.tar.gz" --destination $1 --overwrite
-	sudo mv "$1/1" "/tmp/drupal"
-	sudo rm -rf "$1"
-	sudo mv "/tmp/drupal" "$1"
+	mv "$1/1" "/tmp/drupal"
+	rm -rf "$1"
+	mv "/tmp/drupal" "$1"
 }
 
 #Funcion que hace el respaldo del sitio dado como argumento
 #en este punto se ha comprobado que el sitio es de drupal
 function respaldo (){
-	# funcion que realiza el respaldo del sitio antes de actualizarlo. el respaldo se realiza dentro de 
-	#~/.respaldos
+	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	# Aqui al actualizar se debe crear una carpeta (si no existe) .respaldo (en la ruta $1) y ahi 
+	# alojar el archivo .tar.gz
+	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	existe_dir=$(verificaRespaldos)
-	#si no existe ningun respaldo, se crea el directorio oculto
 	if [ "$existe_dir" != "1" ]; then
 		mkdir "$1/.respaldos"
 	fi
 
 	cd $1
 	echo "La contrasena solicitada es de la DB de drupal"
-	#el respaldo se guarda dentro del directorio oculto
 	drush archive-dump --overwrite --destination="$1/.respaldos/respaldo.tar.gz"
 }
 
@@ -104,6 +106,7 @@ function verificaActualizacion(){
 
 # Función que llama a la funcion que actualiza Drupal o informa si ya está en la última versión.
 function actualizarVH(){
+	echo "Actualizacion de $1"
 	# Verifica ultima version disponible
 	ACT=$(verificaActualizacion $1)
 
@@ -119,7 +122,7 @@ function actualizarVH(){
 
 # Función que verifica si hay respaldos disponibles para Drupal instalado
 function verificaRespaldos(){
-	if [ ! -d "$DIR/.respaldos" ] || [ ${#`ls "$DIR/.respaldos"`} -eq 0 ]
+	if [ ! -d "$1/.respaldos" ]
 	then
 		echo "0"
 	else
