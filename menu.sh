@@ -29,7 +29,7 @@ function restaurarDrupal(){
 	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	# verificar si existe, regresar a menu si no, restaurar si si
 	#echo "Dir $dname"
-	existe_dir=$(verificaRespaldos)
+	existe_dir=$(verificaRespaldos $1)
 	#terminanos la funcion si no existe /.respaldos
 	if [ "$existe_dir" = "0" ]; then
 		echo "Este sitio no tiene ningun respaldo realizado"
